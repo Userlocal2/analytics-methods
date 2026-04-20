@@ -1,0 +1,25 @@
+{
+  "name": "analytics-methods",
+  "version": "1.0.0",
+  "description": "Node.js project with core analytics methods and browser visualizations",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "analyze": "node src/analysis.js",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage"
+  },
+  "keywords": [
+    "analytics",
+    "statistics",
+    "regression",
+    "anova",
+    "capm",
+    "visualization"
+  ],
+  "author": "Jarwis",
+  "license": "ISC",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

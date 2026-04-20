@@ -1,0 +1,118 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+h1, h2 {
+  margin-top: 0;
+}
+.grid, .charts {
+  display: grid;
+  gap: 16px;
+}
+.grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin: 20px 0;
+}
+.charts {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+.card {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.metric-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.5;
+}
+canvas {
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px;
+}
+.controls-card {
+  margin-top: 20px;
+}
+.controls-row,
+.controls-grid {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0;
+}
+.controls-row {
+  grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
+}
+.controls-grid {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.controls-grid label,
+.controls-row label {
+  display: grid;
+  gap: 6px;
+}
+input {
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+button {
+  background: #2563eb;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+button:hover {
+  background: #1d4ed8;
+}
+.hidden {
+  display: none;
+}
+.source-status {
+  margin-top: 10px;
+  color: #93c5fd;
+  font-size: 14px;
+}
+.method-description {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+.inline-metrics {
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.inline-metrics .mini {
+  background: #0f172a;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.inline-metrics .label {
+  color: #94a3b8;
+  font-size: 12px;
+}
+.inline-metrics .value {
+  font-weight: bold;
+  margin-top: 4px;
+}

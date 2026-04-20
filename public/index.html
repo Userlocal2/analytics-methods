@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Methods Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main>
+    <h1>Аналитические методы в Node.js</h1>
+    <p>Демо по корреляции, ковариации, регрессии, ANOVA, CAPM, анализу временных рядов и диагностике регрессии.</p>
+    <p>Источник данных: файл <code>data/observations.xlsx</code>. Если файла нет, приложение временно использует встроенный demo-набор.</p>
+
+    <section class="card controls-card">
+      <h2>Источник данных</h2>
+      <div class="controls-row">
+        <label><input type="radio" name="sourceMode" value="excel" checked /> Excel</label>
+        <label><input type="radio" name="sourceMode" value="yahoo" /> Yahoo Finance</label>
+        <label><input type="radio" name="sourceMode" value="market-api" /> Market API</label>
+      </div>
+      <div id="yahooControls" class="controls-grid hidden">
+        <label>Asset <input id="assetInput" value="AAPL" /></label>
+        <label>Market <input id="marketInput" value="SPY" /></label>
+        <label>Asset A <input id="assetAInput" value="AAPL" /></label>
+        <label>Asset B <input id="assetBInput" value="MSFT" /></label>
+        <label>Asset C <input id="assetCInput" value="GOOGL" /></label>
+        <label>Range <input id="rangeInput" value="5y" /></label>
+        <label>Interval <input id="intervalInput" value="1mo" /></label>
+      </div>
+      <div id="marketApiControls" class="controls-grid hidden">
+        <label>Provider <input id="providerInput" value="alphavantage" /></label>
+        <label>API Key <input id="apiKeyInput" placeholder="Alpha Vantage API key" /></label>
+        <label>Asset <input id="marketAssetInput" value="AAPL" /></label>
+        <label>Market <input id="marketBenchmarkInput" value="SPY" /></label>
+        <label>Asset A <input id="marketAssetAInput" value="AAPL" /></label>
+        <label>Asset B <input id="marketAssetBInput" value="MSFT" /></label>
+        <label>Asset C <input id="marketAssetCInput" value="GOOGL" /></label>
+      </div>
+        <label>Asset <input id="assetInput" value="AAPL" /></label>
+        <label>Market <input id="marketInput" value="SPY" /></label>
+        <label>Asset A <input id="assetAInput" value="AAPL" /></label>
+        <label>Asset B <input id="assetBInput" value="MSFT" /></label>
+        <label>Asset C <input id="assetCInput" value="GOOGL" /></label>
+        <label>Range <input id="rangeInput" value="5y" /></label>
+        <label>Interval <input id="intervalInput" value="1mo" /></label>
+      </div>
+      <button id="reloadButton">Обновить данные</button>
+      <div id="sourceStatus" class="source-status"></div>
+    </section>
+
+    <section id="summary" class="grid"></section>
+
+    <section class="card">
+      <h2>Ключевые показатели</h2>
+      <pre id="metrics"></pre>
+    </section>
+
+    <section class="charts">
+      <div class="card"><h2>Линейная регрессия</h2><p class="method-description">Показывает линейную связь между фактором X1 и целевой переменной Y, а также линию наилучшего приближения.</p><canvas id="linearChart"></canvas></div>
+      <div class="card"><h2>Временной ряд</h2><p class="method-description">Отображает динамику Y по месяцам, чтобы видеть тренды, колебания и общую форму ряда.</p><canvas id="timeSeriesChart"></canvas></div>
+      <div class="card"><h2>Пространственный анализ</h2><p class="method-description">Сравнивает средние значения Y между регионами и помогает увидеть пространственные различия.</p><canvas id="spatialChart"></canvas></div>
+      <div class="card"><h2>CAPM</h2><p class="method-description">Показывает зависимость доходности актива от рыночной доходности и оценивает beta и alpha.</p><canvas id="capmChart"></canvas></div>
+      <div class="card"><h2>ANOVA по категориям</h2><p class="method-description">Проверяет, различаются ли средние значения Y между категориями A, B и C.</p><canvas id="anovaChart"></canvas></div>
+      <div class="card"><h2>Остатки множественной регрессии</h2><p class="method-description">Позволяет оценить ошибки модели, заметить выбросы и проблемы со спецификацией.</p><canvas id="residualChart"></canvas></div>
+      <div class="card"><h2>Rolling Sharpe (окно 3)</h2><p class="method-description">Показывает, как меняется соотношение доходности к риску на скользящем окне.</p><canvas id="rollingSharpeChart"></canvas></div>
+      <div class="card"><h2>Monte Carlo сценарии</h2><p class="method-description">Генерирует набор возможных будущих сценариев доходности на основе случайного моделирования.</p><canvas id="monteCarloChart"></canvas></div>
+      <div class="card"><h2>Efficient Frontier</h2><p class="method-description">Показывает компромисс между риском и доходностью для разных комбинаций портфеля.</p><canvas id="frontierChart"></canvas></div>
+      <div class="card"><h2>Кластеры</h2><p class="method-description">Группирует наблюдения по похожести факторов и помогает увидеть скрытые сегменты данных.</p><canvas id="clusterChart"></canvas></div>
+      <div class="card"><h2>PCA</h2><p class="method-description">Сжимает данные в главную компоненту и показывает, какая доля структуры объясняется главным направлением.</p><canvas id="pcaChart"></canvas></div>
+      <div class="card"><h2>Logistic Regression</h2><p class="method-description">Оценивает вероятность бинарного события, например превышения целевого порога доходности.</p><canvas id="logisticChart"></canvas></div>
+      <div class="card"><h2>Factor Analysis</h2><p class="method-description">Оценивает скрытый общий фактор и факторные нагрузки, стоящие за наблюдаемыми переменными.</p><canvas id="factorChart"></canvas></div>
+      <div class="card"><h2>Nonparametric Tests</h2><p class="method-description">Сравнивает выборки без жёстких предположений о нормальности распределения.</p><div id="nonparametricCard" class="inline-metrics"></div></div>
+      <div class="card"><h2>Panel Data Analysis</h2><p class="method-description">Сводит показатели одновременно по сущностям и по времени, что полезно для panel data.</p><canvas id="panelChart"></canvas></div>
+      <div class="card"><h2>GARCH Volatility</h2><p class="method-description">Моделирует условную волатильность и показывает, как риск меняется во времени.</p><canvas id="garchChart"></canvas></div>
+      <div class="card"><h2>Random Forest</h2><p class="method-description">Ансамбль деревьев решений для прогноза Y, устойчивый к шуму и нелинейностям.</p><canvas id="randomForestChart"></canvas></div>
+      <div class="card"><h2>Gradient Boosting</h2><p class="method-description">Пошагово улучшает прогноз, обучая последовательность слабых моделей на ошибках предыдущих.</p><canvas id="gradientBoostingChart"></canvas></div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
