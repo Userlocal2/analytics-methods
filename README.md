@@ -33,14 +33,43 @@
 
 ## Запуск
 
+Локально без контейнера:
+
 ```bash
 cd /root/.openclaw/workspace/projects/analytics-methods
 npm start
 ```
 
+Через Docker Compose:
+
+```bash
+cd /root/.openclaw/workspace/projects/analytics-methods
+docker compose up -d
+```
+
+Остановить контейнер:
+
+```bash
+docker compose down
+```
+
+Запустить тесты:
+
+```bash
+npm test
+```
+
+Запустить тесты в контейнере:
+
+```bash
+docker compose run --rm analytics-methods npm test
+```
+
 Открыть в браузере:
 
-<http://localhost:3000>
+- <http://localhost:3000>
+- <http://192.168.0.188:3000>
+- <https://analytics.userlocal.app/>
 
 Для вывода чистого JSON-анализа:
 

@@ -7,7 +7,12 @@
     "start": "node src/server.js",
     "analyze": "node src/analysis.js",
     "test": "node --test",
-    "test:coverage": "node --test --experimental-test-coverage"
+    "test:coverage": "node --test --experimental-test-coverage",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:test": "docker compose run --rm analytics-methods npm test"
   },
   "keywords": [
     "analytics",
