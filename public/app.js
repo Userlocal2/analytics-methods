@@ -1,5 +1,11 @@
 let chartInstances = [];
 
+async function loadAccessMeta() {
+  const response = await fetch('/api/access');
+  if (!response.ok) return null;
+  return response.json();
+}
+
 function destroyCharts() {
   chartInstances.forEach((chart) => chart.destroy());
   chartInstances = [];
@@ -49,7 +55,7 @@ function buildQuery() {
   return `/api/analysis?${params.toString()}`;
 }
 
-function updateSourceStatus(data) {
+function updateSourceStatus(data, accessMeta) {
   const status = document.getElementById('sourceStatus');
   if (data.summary.dataSource === 'yahoo' && data.summary.yahoo) {
     const cacheNotes = Object.entries(data.summary.yahoo.cache || {})
@@ -62,7 +68,8 @@ function updateSourceStatus(data) {
     const cacheNotes = Object.entries(data.summary.marketApi.cache || {})
       .map(([symbol, meta]) => meta?.cacheHit ? `${symbol}: cache` : `${symbol}: live`)
       .join(', ');
-    status.textContent = `Источник: Market API (${data.summary.marketApi.provider}), asset=${data.summary.marketApi.asset}, market=${data.summary.marketApi.market}, rows=${data.summary.loadedRows}${cacheNotes ? `, ${cacheNotes}` : ''}`;
+    const accessNote = accessMeta?.marketApi?.hasKey ? `, access.yml подключён` : ', marketApi.key не найден';
+    status.textContent = `Источник: Market API (${data.summary.marketApi.provider}), asset=${data.summary.marketApi.asset}, market=${data.summary.marketApi.market}, rows=${data.summary.loadedRows}${cacheNotes ? `, ${cacheNotes}` : ''}${accessNote}`;
     return;
   }
   if (data.summary.dataSource === 'excel') {
@@ -73,7 +80,10 @@ function updateSourceStatus(data) {
 }
 
 async function load() {
-  const response = await fetch(buildQuery());
+  const [accessMeta, response] = await Promise.all([
+    loadAccessMeta(),
+    fetch(buildQuery())
+  ]);
   const data = await response.json();
 
   if (!response.ok) {
@@ -84,7 +94,7 @@ async function load() {
     return;
   }
 
-  updateSourceStatus(data);
+  updateSourceStatus(data, accessMeta);
   destroyCharts();
 
   document.getElementById('summary').innerHTML = [
@@ -315,14 +325,17 @@ async function load() {
   });
 }
 
+function syncSourceControls() {
+  const mode = document.querySelector('input[name="sourceMode"]:checked').value;
+  document.getElementById('yahooControls').classList.toggle('hidden', mode !== 'yahoo');
+  document.getElementById('marketApiControls').classList.toggle('hidden', mode !== 'market-api');
+}
+
 document.querySelectorAll('input[name="sourceMode"]').forEach((input) => {
-  input.addEventListener('change', () => {
-    const mode = document.querySelector('input[name="sourceMode"]:checked').value;
-    document.getElementById('yahooControls').classList.toggle('hidden', mode !== 'yahoo');
-    document.getElementById('marketApiControls').classList.toggle('hidden', mode !== 'market-api');
-  });
+  input.addEventListener('change', syncSourceControls);
 });
 
 document.getElementById('reloadButton').addEventListener('click', load);
 
+syncSourceControls();
 load();

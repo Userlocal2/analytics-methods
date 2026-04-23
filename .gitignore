@@ -12,3 +12,5 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 *.log
+config/access.yml
+!config/access.yml.dist

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const mysql = require('mysql2/promise');
 const XLSX = require('xlsx');
 
 const demoObservations = [
@@ -34,6 +35,7 @@ const REQUIRED_COLUMNS = [
 
 const EXCEL_PATH = path.join(__dirname, '..', 'data', 'observations.xlsx');
 const CACHE_DIR = path.join(__dirname, '..', '.cache');
+const ACCESS_FILE_PATH = path.join(__dirname, '..', 'config', 'access.yml');
 const YAHOO_CACHE_TTL_MS = 15 * 60 * 1000;
 const MARKET_API_CACHE_TTL_MS = 15 * 60 * 1000;
 
@@ -87,6 +89,96 @@ function loadExcelObservations() {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseSimpleYaml(filePath) {
+  if (!fs.existsSync(filePath)) return {};
+
+  const root = {};
+  const stack = [{ indent: -1, value: root }];
+
+  for (const rawLine of fs.readFileSync(filePath, 'utf8').split(/\r?\n/)) {
+    if (!rawLine.trim() || rawLine.trimStart().startsWith('#')) continue;
+    const indent = rawLine.match(/^\s*/)[0].length;
+    const trimmed = rawLine.trim();
+    const separatorIndex = trimmed.indexOf(':');
+    if (separatorIndex === -1) continue;
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    let value = trimmed.slice(separatorIndex + 1).trim();
+
+    while (stack.length && indent <= stack[stack.length - 1].indent) stack.pop();
+    const parent = stack[stack.length - 1].value;
+
+    if (!value) {
+      parent[key] = {};
+      stack.push({ indent, value: parent[key] });
+      continue;
+    }
+
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    parent[key] = value;
+  }
+
+  return root;
+}
+
+function loadAccessConfig() {
+  const fileConfig = parseSimpleYaml(ACCESS_FILE_PATH);
+  return {
+    database: {
+      host: fileConfig.database?.host || process.env.ANALYTICS_DB_HOST || null,
+      port: Number(fileConfig.database?.port || process.env.ANALYTICS_DB_PORT || 3306),
+      username: fileConfig.database?.username || process.env.ANALYTICS_USERNAME || null,
+      password: fileConfig.database?.password || process.env.ANALYTICS_PASSWORD || null,
+      name: fileConfig.database?.name || process.env.ANALYTICS_DATABASE || null
+    },
+    marketApi: {
+      key: fileConfig.marketApi?.key || process.env.MARKET_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || null,
+      provider: fileConfig.marketApi?.provider || process.env.MARKET_API_PROVIDER || 'alphavantage'
+    },
+    rapidApi: {
+      key: fileConfig.rapidApi?.key || process.env.RAPIDAPI_KEY || null,
+      host: fileConfig.rapidApi?.host || process.env.RAPIDAPI_HOST || 'linkedin-data-api.p.rapidapi.com'
+    }
+  };
+}
+
+async function createDatabaseConnection() {
+  const access = loadAccessConfig();
+  const { host, port, username, password, name } = access.database || {};
+  if (!host || !port || !username || !password || !name) {
+    throw new Error('Database configuration is incomplete');
+  }
+
+  return mysql.createConnection({
+    host,
+    port,
+    user: username,
+    password,
+    database: name,
+    connectTimeout: 5000
+  });
+}
+
+async function checkDatabaseConnection() {
+  const access = loadAccessConfig();
+  const { host, port, name } = access.database || {};
+  const connection = await createDatabaseConnection();
+
+  try {
+    const [rows] = await connection.query('SELECT 1 AS ok');
+    return {
+      ok: rows?.[0]?.ok === 1,
+      host,
+      port,
+      database: name
+    };
+  } finally {
+    await connection.end();
+  }
 }
 
 function ensureCacheDir() {
@@ -269,8 +361,9 @@ function alphaSeriesToRows(payload) {
 }
 
 async function loadMarketApiObservations(options = {}) {
-  const provider = options.provider || 'alphavantage';
-  const apiKey = options.apiKey || process.env.ALPHA_VANTAGE_API_KEY;
+  const accessConfig = loadAccessConfig();
+  const provider = options.provider || accessConfig.marketApi.provider || 'alphavantage';
+  const apiKey = options.apiKey || accessConfig.marketApi.key;
   if (!apiKey) throw new Error('API key is required for Market API mode');
   if (provider !== 'alphavantage') throw new Error(`Unsupported market provider: ${provider}`);
 
@@ -342,7 +435,11 @@ module.exports = {
   loadExcelObservations,
   loadYahooObservations,
   loadMarketApiObservations,
+  loadAccessConfig,
   REQUIRED_COLUMNS,
   EXCEL_PATH,
-  demoObservations
+  ACCESS_FILE_PATH,
+  demoObservations,
+  createDatabaseConnection,
+  checkDatabaseConnection
 };

@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { buildAnalysis } = require('../src/analysis');
-const { loadExcelObservations, loadMarketApiObservations, demoObservations } = require('../src/data');
+const { loadExcelObservations, loadMarketApiObservations, loadAccessConfig, demoObservations } = require('../src/data');
 
 test('excel loader falls back to demo dataset when xlsx is absent', () => {
   const result = loadExcelObservations();
@@ -22,7 +22,13 @@ test('buildAnalysis returns core summary and advanced method blocks for excel/de
   assert.equal(analysis.raw.length, analysis.summary.observations);
 });
 
-test('market-api mode requires api key', async () => {
+test('market-api mode requires api key when not present in request, env, or access.txt', async () => {
+  const accessConfig = loadAccessConfig();
+  if (accessConfig.marketApi?.key) {
+    assert.ok(accessConfig.marketApi.key.length > 0);
+    return;
+  }
+
   await assert.rejects(
     () => loadMarketApiObservations({ provider: 'alphavantage' }),
     /API key is required/

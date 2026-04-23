@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 const { buildAnalysis } = require('./analysis');
+const { loadAccessConfig, ACCESS_FILE_PATH, checkDatabaseConnection } = require('./data');
 
 const publicDir = path.join(__dirname, '..', 'public');
 
@@ -11,8 +12,43 @@ function send(res, status, type, body) {
   res.end(body);
 }
 
+function accessMeta() {
+  const config = loadAccessConfig();
+  return {
+    path: ACCESS_FILE_PATH,
+    database: {
+      hasHost: Boolean(config.database?.host),
+      port: config.database?.port || null,
+      hasUsername: Boolean(config.database?.username),
+      hasPassword: Boolean(config.database?.password),
+      hasName: Boolean(config.database?.name)
+    },
+    marketApi: {
+      hasKey: Boolean(config.marketApi?.key),
+      provider: config.marketApi?.provider || null
+    },
+    rapidApi: {
+      hasKey: Boolean(config.rapidApi?.key),
+      host: config.rapidApi?.host || null
+    }
+  };
+}
+
 const server = http.createServer(async (req, res) => {
   const requestUrl = new URL(req.url, 'http://localhost');
+
+  if (requestUrl.pathname === '/api/access') {
+    return send(res, 200, 'application/json; charset=utf-8', JSON.stringify(accessMeta()));
+  }
+
+  if (requestUrl.pathname === '/api/db-check') {
+    try {
+      const result = await checkDatabaseConnection();
+      return send(res, 200, 'application/json; charset=utf-8', JSON.stringify(result));
+    } catch (error) {
+      return send(res, 500, 'application/json; charset=utf-8', JSON.stringify({ error: error.message }));
+    }
+  }
 
   if (requestUrl.pathname === '/api/analysis') {
     try {
@@ -30,7 +66,8 @@ const server = http.createServer(async (req, res) => {
         range: requestUrl.searchParams.get('range') || undefined
       });
       analysis.debug = {
-        portfolioOptimizationKeys: Object.keys((analysis.methods || {}).portfolioOptimization || {})
+        portfolioOptimizationKeys: Object.keys((analysis.methods || {}).portfolioOptimization || {}),
+        access: accessMeta()
       };
       return send(res, 200, 'application/json; charset=utf-8', JSON.stringify(analysis));
     } catch (error) {

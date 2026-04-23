@@ -12,6 +12,7 @@
     <h1>Аналитические методы в Node.js</h1>
     <p>Демо по корреляции, ковариации, регрессии, ANOVA, CAPM, анализу временных рядов и диагностике регрессии.</p>
     <p>Источник данных: файл <code>data/observations.xlsx</code>. Если файла нет, приложение временно использует встроенный demo-набор.</p>
+    <p>Доступы и ключи можно хранить в <code>config/access.yml</code>, проект подхватывает их автоматически.</p>
 
     <section class="card controls-card">
       <h2>Источник данных</h2>
@@ -31,22 +32,14 @@
       </div>
       <div id="marketApiControls" class="controls-grid hidden">
         <label>Provider <input id="providerInput" value="alphavantage" /></label>
-        <label>API Key <input id="apiKeyInput" placeholder="Alpha Vantage API key" /></label>
+        <label>API Key <input id="apiKeyInput" placeholder="optional, otherwise config/access.yml marketApi.key is used" /></label>
         <label>Asset <input id="marketAssetInput" value="AAPL" /></label>
         <label>Market <input id="marketBenchmarkInput" value="SPY" /></label>
         <label>Asset A <input id="marketAssetAInput" value="AAPL" /></label>
         <label>Asset B <input id="marketAssetBInput" value="MSFT" /></label>
         <label>Asset C <input id="marketAssetCInput" value="GOOGL" /></label>
       </div>
-        <label>Asset <input id="assetInput" value="AAPL" /></label>
-        <label>Market <input id="marketInput" value="SPY" /></label>
-        <label>Asset A <input id="assetAInput" value="AAPL" /></label>
-        <label>Asset B <input id="assetBInput" value="MSFT" /></label>
-        <label>Asset C <input id="assetCInput" value="GOOGL" /></label>
-        <label>Range <input id="rangeInput" value="5y" /></label>
-        <label>Interval <input id="intervalInput" value="1mo" /></label>
-      </div>
-      <button id="reloadButton">Обновить данные</button>
+      <button id="reloadButton">Загрузить данные</button>
       <div id="sourceStatus" class="source-status"></div>
     </section>
 

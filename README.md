@@ -59,6 +59,12 @@ docker compose down
 npm test
 ```
 
+Запустить миграции:
+
+```bash
+npm run migrate
+```
+
 Запустить тесты в контейнере:
 
 ```bash
@@ -71,18 +77,56 @@ docker compose run --rm analytics-methods npm test
 - <http://192.168.0.188:3000>
 - <https://analytics.userlocal.app/>
 
+Чтобы загрузить реальные данные из Yahoo Finance:
+
+- открой приложение в браузере
+- выбери `Yahoo Finance`
+- укажи тикеры и период при необходимости
+- нажми кнопку `Загрузить данные`
+
+Примечание: Yahoo иногда отвечает `429 Too Many Requests`, тогда проект использует кэш, если он уже есть.
+
 Для вывода чистого JSON-анализа:
 
 ```bash
 npm run analyze
 ```
 
+## Доступы
+
+Проект автоматически читает файл:
+
+```bash
+/root/.openclaw/workspace/projects/analytics-methods/config/access.yml
+```
+
+Формат:
+
+```yaml
+database:
+  host: ""
+  port: "3306"
+  username: "..."
+  password: "..."
+  name: "..."
+
+marketApi:
+  key: "..."
+  provider: "alphavantage"
+
+rapidApi:
+  key: "..."
+  host: "linkedin-data-api.p.rapidapi.com"
+```
+
+Для режима `market-api` используется поле `marketApi.key`.
+
 ## Структура
 
 - `src/data.js` - демо-данные
 - `src/stats.js` - статистические функции
 - `src/analysis.js` - сборка результатов по методам
-- `src/server.js` - простой HTTP сервер
+- `src/server.js` - простой HTTP сервер и API для статуса доступов
 - `public/` - фронтенд с Chart.js визуализациями
 
 ## Примечание
